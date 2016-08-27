@@ -7,6 +7,4 @@ float64 transformYDis
 float64 transformX
 float64 transformY
 float64 transformZ
-float64 transformRoll
-float64 transformPitch
-float64 transformYaw
+int32 transformts

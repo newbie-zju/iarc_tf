@@ -14,13 +14,17 @@ public:
     float deltax,deltay;
     Mat p_world;
     Mat p_ned;
+    Mat p_temp_w;
+    Mat p_temp_n;
     BoundaryTransform();
     ~BoundaryTransform();
     
     void getBoundaryX(float x);
     void getBoundaryY(float y);
     void getBoundaryXY(float x, float y);
-    void getTransform(void);
+    void getNedXY(float x, float y);
+    void getWorld2NedTransform(void);
+    void getNed2WorldTransform(void);
     
 };
 
