@@ -1,5 +1,5 @@
 #include "iarc_tf/ned_world_broadcaster.h"
-
+using namespace std;
 
 enum state{NOEDGE,XEDGE,YEDGE,XYEDGE};
 enum xSideType{noxSide,leftSide,rightSide};
@@ -30,7 +30,7 @@ void NedWorldBroadcaster::boundaryoutputCallback(const geometry_msgs::PointConst
     boundary_output.x = msg->x;
     boundary_output.y = msg->y;
     boundary_output.z = msg->z;
-    
+    cout << "boundary_output.z " << boundary_output.z << endl;
     client = nh_.serviceClient<iarc_tf::NedWorldTransform>("ned_world_transform");
     iarc_tf::NedWorldTransform srv;
     

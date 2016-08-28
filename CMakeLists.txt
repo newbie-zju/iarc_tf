@@ -10,8 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   boundary_detect
   message_generation
-  #geometry_msgs
-  #actionlib_msgs
   tf
 )
 
@@ -59,6 +57,8 @@ find_package(OpenCV REQUIRED)
  add_service_files(
    FILES
    NedWorldTransform.srv
+   Boundary.srv
+   Velocity.srv
    
  )
 
@@ -73,8 +73,6 @@ find_package(OpenCV REQUIRED)
 generate_messages(
    DEPENDENCIES
    std_msgs
-   #geometry_msgs
-   #actionlib_msgs
  )
 
 ################################################
@@ -138,11 +136,22 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(ned_world_broadcaster_node src/ned_world_broadcaster.cpp src/ned_world_broadcaster_node.cpp)
+add_executable(ned_world_ground_frame_node src/ned_world_ground_frame.cpp src/ned_world_ground_frame_node.cpp)
+add_executable(ned_world_velocity_transform_client_node src/ned_world_velocity_transform_client.cpp src/ned_world_velocity_transform_client_node.cpp)
+
 add_executable(ned_world_transform_node src/ned_world_transform.cpp src/boundary_transform.cpp)
+add_executable(ned_world_dynamic_node src/ned_world_dynamic.cpp src/ned_world_dynamic_node.cpp)
+add_executable(ned_world_velocity_transform_node src/ned_world_velocity_transform.cpp)
+
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(ned_world_broadcaster_node iarc_tf_gencpp)
 add_dependencies(ned_world_transform_node iarc_tf_gencpp)
+add_dependencies(ned_world_dynamic_node iarc_tf_gencpp)
+add_dependencies(ned_world_ground_frame_node iarc_tf_gencpp)
+add_dependencies(ned_world_velocity_transform_node iarc_tf_gencpp)
+add_dependencies(ned_world_velocity_transform_client_node iarc_tf_gencpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(ned_world_broadcaster_node
   ${catkin_LIBRARIES}
@@ -152,7 +161,12 @@ target_link_libraries(ned_world_transform_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
  )
+target_link_libraries(ned_world_dynamic_node ${catkin_LIBRARIES})
+target_link_libraries(ned_world_ground_frame_node ${catkin_LIBRARIES})
+target_link_libraries(ned_world_velocity_transform_node ${catkin_LIBRARIES})
+target_link_libraries(ned_world_velocity_transform_client_node ${catkin_LIBRARIES})
 
+#############
 #############
 ## Install ##
 #############

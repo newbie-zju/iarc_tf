@@ -1,0 +1,3 @@
+<launch>
+    <node pkg= "iarc_tf" type="ned_world_dynamic_node" name="ned_world_dynamic"/>
+</launch>
