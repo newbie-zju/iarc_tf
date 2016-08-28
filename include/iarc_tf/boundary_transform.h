@@ -10,7 +10,7 @@ using namespace cv;
 class BoundaryTransform
 {
 public:
-    float cyaw,syaw;
+    float yaw;
     float deltax,deltay;
     Mat p_world;
     Mat p_ned;

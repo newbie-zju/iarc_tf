@@ -137,7 +137,7 @@ include_directories(
 # add_dependencies(iarc_tf ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(ned_world_broadcaster_node src/ned_world_broadcaster.cpp)
+add_executable(ned_world_broadcaster_node src/ned_world_broadcaster.cpp src/ned_world_broadcaster_node.cpp)
 add_executable(ned_world_transform_node src/ned_world_transform.cpp src/boundary_transform.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
