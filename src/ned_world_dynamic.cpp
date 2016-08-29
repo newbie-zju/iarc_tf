@@ -1,19 +1,32 @@
 #include "iarc_tf/ned_world_dynamic.h"
-
+#include "math.h"
 using namespace std;
 NedWorldDynamic::NedWorldDynamic():nh("~")
 {
-    sta_yaw = -0.136;
+    sta_yaw = M_PI;
+    //sta_yaw = -0.136;
     sta_x = 0.0;
-    sta_y = 4.0;
+    sta_y = 0.0;
     dyn_local_position_sub = nh.subscribe("/dji_sdk/local_position",10,&NedWorldDynamic::localpositionCallback,this);
     dyn_boundary_output_sub = nh.subscribe("/boundary_output",10,&NedWorldDynamic::boundarydetectCallback,this);
-    
+    dyn_local_quaternion_sub = nh.subscribe("/dji_sdk/attitude_quaternion",10,&NedWorldDynamic::localquaternionCallback,this);
 }
 
 NedWorldDynamic::~NedWorldDynamic()
 {
     ROS_INFO("destroying the ned_world_dynamic node ...");
+}
+void NedWorldDynamic::localquaternionCallback(const dji_sdk::AttitudeQuaternionConstPtr &msg)
+{
+	dyn_local_quaternion.q0 = msg->q0;
+	dyn_local_quaternion.q1 = msg->q1;
+	dyn_local_quaternion.q2 = msg->q2;
+	dyn_local_quaternion.q3 = msg->q3;
+	
+// 	tf_quaternion.w()=dyn_local_quaternion.q0;
+// 	tf_quaternion.x()=dyn_local_quaternion.q1;
+// 	tf_quaternion.y()=dyn_local_quaternion.q2;
+// 	tf_quaternion.z()=dyn_local_quaternion.q3;
 }
 void NedWorldDynamic::localpositionCallback(const dji_sdk::LocalPositionConstPtr& msg)
 {
@@ -21,8 +34,15 @@ void NedWorldDynamic::localpositionCallback(const dji_sdk::LocalPositionConstPtr
     dyn_local_position.x = msg->x;
     dyn_local_position.y = msg->y;
     dyn_local_position.z = msg->z;
+	
+	static tf::TransformBroadcaster br;
+    tf::Transform transformw2b;
+    transformw2b.setOrigin(tf::Vector3(dyn_local_position.x, dyn_local_position.y,dyn_local_position.z));
+    tf::Quaternion quaternion;
+    transformw2b.setRotation(tf::Quaternion(dyn_local_quaternion.q1,dyn_local_quaternion.q2,dyn_local_quaternion.q3,dyn_local_quaternion.q0));
+    br.sendTransform(tf::StampedTransform(transformw2b,ros::Time::now(),"world","body"));
     
-    ROS_INFO_STREAM("dyn_local_position_x: "<<dyn_local_position.x);
+    //ROS_INFO_STREAM("dyn_local_position_x: "<<dyn_local_position.x);
     
 }
 
@@ -31,7 +51,7 @@ void NedWorldDynamic::boundarydetectCallback(const geometry_msgs::PointConstPtr&
     dyn_boundary_output.x = msg->x;
     dyn_boundary_output.y = msg->y;
     dyn_boundary_output.z = msg->z;
-    ROS_INFO_STREAM("dyn_boundary_z: "<<dyn_boundary_output.z);
+    //ROS_INFO_STREAM("dyn_boundary_z: "<<dyn_boundary_output.z);
     
     switch(int(dyn_boundary_output.z))
     {
@@ -39,34 +59,34 @@ void NedWorldDynamic::boundarydetectCallback(const geometry_msgs::PointConstPtr&
 	    dyn_yaw = sta_yaw;
 	    dyn_x = sta_x;
 	    dyn_y = sta_y;
-	    ROS_INFO("NOEDGE");
+	    //ROS_INFO("NOEDGE");
 	    break;
 	case 1:
 	    dyn_yaw = sta_yaw;
 	    dyn_x = sta_x;
 	    dyn_y = dyn_boundary_output.y+sin(dyn_yaw)*dyn_local_position.x-cos(dyn_yaw)*dyn_local_position.y;
-	    ROS_INFO("XEDGE");
+	    //ROS_INFO("XEDGE");
 	    break;
 	case 2:
 	    dyn_yaw = sta_yaw;
 	    dyn_y = sta_y;
 	    dyn_x = dyn_boundary_output.x-sin(dyn_yaw)*dyn_local_position.y-cos(dyn_yaw)*dyn_local_position.x;
-	    ROS_INFO("YEDGE");
+	    //ROS_INFO("YEDGE");
 	    break;
 	case 3:
 	    dyn_yaw = sta_yaw;
 	    dyn_x = dyn_boundary_output.x-sin(dyn_yaw)*dyn_local_position.y-cos(dyn_yaw)*dyn_local_position.x;
 	    dyn_y = dyn_boundary_output.y+sin(dyn_yaw)*dyn_local_position.x-cos(dyn_yaw)*dyn_local_position.y;
-	    ROS_INFO("XYEDGE");
+	    //ROS_INFO("XYEDGE");
 	    break;
     }
     
     static tf::TransformBroadcaster br;
-    tf::Transform transform;
-    transform.setOrigin(tf::Vector3(dyn_x, dyn_y,0.0));
+    tf::Transform transformw2g;
+    transformw2g.setOrigin(tf::Vector3(dyn_x, dyn_y,0.0));
     tf::Quaternion quaternion;
-    transform.setRotation(tf::createQuaternionFromYaw(dyn_yaw));
-    br.sendTransform(tf::StampedTransform(transform,ros::Time::now(),"world","ground"));
+    transformw2g.setRotation(tf::createQuaternionFromYaw(dyn_yaw));
+    br.sendTransform(tf::StampedTransform(transformw2g,ros::Time::now(),"world","ground"));
 }
 
 

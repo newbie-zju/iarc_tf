@@ -19,7 +19,7 @@
 enum VelState{NED,GROUND};
 //geometry_msgs::Vector3 vel_origin;
 geometry_msgs::Vector3 vel_target;
-#define offset_yaw -0.136
+#define offset_yaw 3.14
 double ResState;
 
 bool velocitytransformCallback(iarc_tf::Velocity::Request &req, iarc_tf::Velocity::Response &res)
