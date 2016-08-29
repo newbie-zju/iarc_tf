@@ -2,14 +2,8 @@
 
 created by ipatient-zju：
 
-- **Markdown和扩展Markdown简洁的语法**
-- **代码块高亮**
-- **图片链接和图片上传**
-- ***LaTex*数学公式**
-- **UML序列图和流程图**
-- **离线写博客**
-- **导入导出Markdown文件**
-- **丰富的快捷键**
+- **offer tf transform world-body, world-ground**
+
 
 -------------------
 
