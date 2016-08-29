@@ -1,6 +1,6 @@
-# 欢迎使用Markdown编辑器写博客
+# iarc_tf
 
-本Markdown编辑器使用[StackEdit][6]修改而来，用它写博客，将会带来全新的体验哦：
+created by ipatient-zju：
 
 - **Markdown和扩展Markdown简洁的语法**
 - **代码块高亮**
