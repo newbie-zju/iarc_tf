@@ -1,6 +1,7 @@
 #include "iarc_tf/ned_world_dynamic.h"
 #include "math.h"
 using namespace std;
+enum VelState{NED,GROUND};
 NedWorldDynamic::NedWorldDynamic():nh("~")
 {
     sta_yaw = M_PI;
@@ -10,6 +11,9 @@ NedWorldDynamic::NedWorldDynamic():nh("~")
     dyn_local_position_sub = nh.subscribe("/dji_sdk/local_position",10,&NedWorldDynamic::localpositionCallback,this);
     dyn_boundary_output_sub = nh.subscribe("/boundary_output",10,&NedWorldDynamic::boundarydetectCallback,this);
     dyn_local_quaternion_sub = nh.subscribe("/dji_sdk/attitude_quaternion",10,&NedWorldDynamic::localquaternionCallback,this);
+    
+    service = nh.advertiseService("ned_world_velocity_transform_srvice",&NedWorldDynamic::velocitytransformCallback,this);
+    ROS_INFO("Ready to transform velocity between NED frame and ground frame");
 }
 
 NedWorldDynamic::~NedWorldDynamic()
@@ -88,5 +92,31 @@ void NedWorldDynamic::boundarydetectCallback(const geometry_msgs::PointConstPtr&
     transformw2g.setRotation(tf::createQuaternionFromYaw(dyn_yaw));
     br.sendTransform(tf::StampedTransform(transformw2g,ros::Time::now(),"world","ground"));
 }
+
+bool NedWorldDynamic::velocitytransformCallback(iarc_tf::Velocity::Request& req, iarc_tf::Velocity::Response& res)
+{
+     //0, velocity in Ned frame
+    switch(req.velocityFrame)
+    {
+	case NED: // velocity in NED frame
+	    vel_target.x = cos(sta_yaw)*req.velocityX+sin(sta_yaw)*req.velocityX;
+	    vel_target.y=-1.0*sin(sta_yaw)*req.velocityX+cos(sta_yaw)*req.velocityY;
+	    ResState = 1.0;
+	    vel_target.z = 0;
+	    break;
+	case GROUND: //velocity in ground frame
+	    vel_target.x = cos(sta_yaw)*req.velocityX-sin(sta_yaw)*req.velocityX;
+	    vel_target.y = sin(sta_yaw)*req.velocityX+cos(sta_yaw)*req.velocityY;
+	    vel_target.z = 0;
+	    ResState = 0.0;
+	    break;	    
+    }
+    
+    res.velocityFrameRes = ResState;
+    res.velocityXRes = vel_target.x;
+    res.velocityYRes = vel_target.y;
+    return true;
+}
+
 
 

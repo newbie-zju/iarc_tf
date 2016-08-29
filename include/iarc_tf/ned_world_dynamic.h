@@ -2,6 +2,7 @@
 #define __NED_WORLD_BROADCASTER_H_
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
 #include <geometry_msgs/Twist.h>
 #include "boundary_detect/Boundary.h"
 #include "iarc_tf/NedWorldTransform.h"
@@ -17,9 +18,13 @@ public:
     ros::NodeHandle nh;
     ros::Subscriber dyn_local_position_sub;
     ros::Subscriber dyn_boundary_output_sub;
-	ros::Subscriber dyn_local_quaternion_sub;
+    ros::Subscriber dyn_local_quaternion_sub;
+    ros::ServiceServer service;
+    
     string frame_name;
     geometry_msgs::Point dyn_boundary_output;
+    geometry_msgs::Vector3 vel_target;
+    double ResState;
     dji_sdk::LocalPosition dyn_local_position;
 	dji_sdk::AttitudeQuaternion dyn_local_quaternion;
 	//tf::Quaternion dyn_local_quaternion;
@@ -33,6 +38,7 @@ public:
     void boundarydetectCallback(const geometry_msgs::PointConstPtr &msg);
     void localpositionCallback(const dji_sdk::LocalPositionConstPtr &msg);
 	void localquaternionCallback(const dji_sdk::AttitudeQuaternionConstPtr &msg);
+    bool velocitytransformCallback(iarc_tf::Velocity::Request &req, iarc_tf::Velocity::Response &res);
 };
 
 
