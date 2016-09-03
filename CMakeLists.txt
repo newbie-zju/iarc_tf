@@ -4,6 +4,7 @@ project(iarc_tf)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+find_package(Eigen3 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -119,6 +120,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include)
 include_directories(
+  ${Eigen3_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${PoenCV_INCLUDE_DIRS}
   ${iarc_tf_SOURCE_DIR}/include/iarc_tf

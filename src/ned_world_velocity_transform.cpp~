@@ -19,7 +19,7 @@
 enum VelState{NED,GROUND};
 //geometry_msgs::Vector3 vel_origin;
 geometry_msgs::Vector3 vel_target;
-#define offset_yaw 1.421
+#define offset_yaw 0.1354
 double ResState;
 
 bool velocitytransformCallback(iarc_tf::Velocity::Request &req, iarc_tf::Velocity::Response &res)
@@ -28,13 +28,13 @@ bool velocitytransformCallback(iarc_tf::Velocity::Request &req, iarc_tf::Velocit
     switch(req.velocityFrame)
     {
 	case NED: // velocity in NED frame
-	    vel_target.x = cos(offset_yaw)*req.velocityX+sin(offset_yaw)*req.velocityY;
+	    vel_target.x = cos(offset_yaw)*req.velocityX+sin(offset_yaw)*req.velocityX;
 	    vel_target.y = -1.0*sin(offset_yaw)*req.velocityX+cos(offset_yaw)*req.velocityY;
 	    ResState = 1.0;
 	    vel_target.z = 0;
 	    break;
 	case GROUND: //velocity in ground frame
-	    vel_target.x = cos(offset_yaw)*req.velocityX-sin(offset_yaw)*req.velocityY;
+	    vel_target.x = cos(offset_yaw)*req.velocityX-sin(offset_yaw)*req.velocityX;
 	    vel_target.y = sin(offset_yaw)*req.velocityX+cos(offset_yaw)*req.velocityY;
 	    vel_target.z = 0;
 	    ResState = 0.0;

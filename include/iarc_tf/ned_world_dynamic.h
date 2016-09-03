@@ -11,6 +11,9 @@
 #include "iarc_tf/Boundary.h"
 #include "iarc_tf/Velocity.h"
 #include <tf/tf.h>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+using namespace Eigen;
 using namespace std;
 class NedWorldDynamic
 {
@@ -19,6 +22,8 @@ public:
     ros::Subscriber dyn_local_position_sub;
     ros::Subscriber dyn_boundary_output_sub;
     ros::Subscriber dyn_local_quaternion_sub;
+	ros::Publisher ground_position_pub;
+	geometry_msgs::Point ground_position;
     ros::ServiceServer service;
     
     string frame_name;
@@ -32,6 +37,11 @@ public:
     double sta_x, sta_y;
     double dyn_yaw;
     double dyn_x, dyn_y;
+	Quaterniond q;
+	Matrix4d c_b2n_, c_n2g_;
+	Matrix3d r_b2n, r_n2g;
+	Vector3d t_b2n, t_n2g;
+	Vector3d t_n2g_init;
     
     NedWorldDynamic();
     ~NedWorldDynamic();
@@ -39,6 +49,12 @@ public:
     void localpositionCallback(const dji_sdk::LocalPositionConstPtr &msg);
 	void localquaternionCallback(const dji_sdk::AttitudeQuaternionConstPtr &msg);
     bool velocitytransformCallback(iarc_tf::Velocity::Request &req, iarc_tf::Velocity::Response &res);
+	Matrix3d quaternion2mat(Quaterniond q);
+	Matrix3d yaw2mat(double yaw);
+	Matrix4d c_n2g(double yaw, Vector3d t_n2g);
+	Matrix4d c_b2n(Quaterniond q, Vector3d t_b2n);
+
+	
 };
 
 

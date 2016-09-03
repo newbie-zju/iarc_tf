@@ -11,13 +11,13 @@
 namespace ned_world_ground{
 class NedWorldGroundFrame{
 public:
-    ros::NodeHandle nh_;
+    ros::NodeHandle nh;
     ros::Subscriber local_position_sub;
     ros::Publisher ground_position_pub;
     dji_sdk::LocalPosition ground_local_position,ground_position;
     bool transformState;
     
-    NedWorldGroundFrame(ros::NodeHandle nh);
+    NedWorldGroundFrame();
     ~NedWorldGroundFrame();
     
     void positionCallback(const dji_sdk::LocalPositionConstPtr &msg);
