@@ -19,9 +19,8 @@
 enum VelState{NED,GROUND};
 //geometry_msgs::Vector3 vel_origin;
 geometry_msgs::Vector3 vel_target;
-#define offset_yaw 1.421
 double ResState;
-
+double offset_yaw;
 bool velocitytransformCallback(iarc_tf::Velocity::Request &req, iarc_tf::Velocity::Response &res)
 {
     //0, velocity in Ned frame
@@ -50,7 +49,8 @@ bool velocitytransformCallback(iarc_tf::Velocity::Request &req, iarc_tf::Velocit
 int main(int argc, char** argv){
     ros::init(argc, argv, "ned_world_velocity_service");
     ros::NodeHandle nh;
-    
+	ros::NodeHandle nh_param("~");
+    if(!nh_param.getParam("yaw_origin",offset_yaw))offset_yaw = 0.0;
     //string service_name = "ned_world_velocity";    
     ros::ServiceServer service = nh.advertiseService("ned_world_velocity_transform_srvice",velocitytransformCallback);
     ROS_INFO("Ready to transform velocity between NED frame and ground frame");

@@ -6,7 +6,7 @@ enum VelState{NED,GROUND};
 //FrameConversion frameconversion;
 NedWorldDynamic::NedWorldDynamic():nh("~")
 {
-    sta_yaw = 1.421;
+    if(!nh.getParam("yaw_origin",sta_yaw))sta_yaw = 0.0;
     //sta_yaw = -0.136;
     sta_x = 2.5;
     sta_y = 2.5;
