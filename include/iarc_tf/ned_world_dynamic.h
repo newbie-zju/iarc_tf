@@ -4,6 +4,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PointStamped.h>
 #include "boundary_detect/Boundary.h"
 #include "iarc_tf/NedWorldTransform.h"
 #include "dji_sdk/LocalPosition.h"
@@ -23,7 +24,7 @@ public:
     ros::Subscriber dyn_boundary_output_sub;
     ros::Subscriber dyn_local_quaternion_sub;
 	ros::Publisher ground_position_pub;
-	geometry_msgs::Point ground_position;
+	geometry_msgs::PointStamped ground_position;
     ros::ServiceServer service;
     
     string frame_name;
@@ -45,7 +46,7 @@ public:
     
     NedWorldDynamic();
     ~NedWorldDynamic();
-    void boundarydetectCallback(const geometry_msgs::PointConstPtr &msg);
+    void boundarydetectCallback(const geometry_msgs::PointStampedConstPtr &msg);
     void localpositionCallback(const dji_sdk::LocalPositionConstPtr &msg);
 	void localquaternionCallback(const dji_sdk::AttitudeQuaternionConstPtr &msg);
     bool velocitytransformCallback(iarc_tf::Velocity::Request &req, iarc_tf::Velocity::Response &res);

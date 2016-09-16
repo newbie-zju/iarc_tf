@@ -8,8 +8,10 @@ NedWorldDynamic::NedWorldDynamic():nh("~")
 {
     if(!nh.getParam("yaw_origin",sta_yaw))sta_yaw = 0.0;
     //sta_yaw = -0.136;
-    sta_x = 2.5;
-    sta_y = 2.5;
+    //sta_x = 2.5;
+    //sta_y = 2.5;
+	if(!nh.getParam("sta_x",sta_x))sta_x = 0.0;
+	if(!nh.getParam("sta_y",sta_y))sta_y = 0.0;
     dyn_yaw = sta_yaw;
     dyn_x = sta_x;
     dyn_y = sta_y;
@@ -29,7 +31,7 @@ NedWorldDynamic::NedWorldDynamic():nh("~")
     dyn_boundary_output_sub = nh.subscribe("/boundary_output",10,&NedWorldDynamic::boundarydetectCallback,this);
     dyn_local_quaternion_sub = nh.subscribe("/dji_sdk/attitude_quaternion",10,&NedWorldDynamic::localquaternionCallback,this);
     
-    ground_position_pub = nh.advertise<geometry_msgs::Point>("/ground_position",10);
+    ground_position_pub = nh.advertise<geometry_msgs::PointStamped>("/ground_position",10);
 }
 
 NedWorldDynamic::~NedWorldDynamic()
@@ -56,9 +58,10 @@ void NedWorldDynamic::localpositionCallback(const dji_sdk::LocalPositionConstPtr
 	
 	Matrix4d c_b2g = c_n2g_*c_b2n_;
 	
-	ground_position.x = c_b2g(0,3);
-	ground_position.y = c_b2g(1,3);
-	ground_position.z = -1*c_b2g(2,3);
+	ground_position.point.x = c_b2g(0,3);
+	ground_position.point.y = c_b2g(1,3);
+	ground_position.point.z = -1*c_b2g(2,3);
+	ground_position.header.stamp = ros::Time::now();
 	
 	ground_position_pub.publish(ground_position);
 	
@@ -67,18 +70,59 @@ void NedWorldDynamic::localpositionCallback(const dji_sdk::LocalPositionConstPtr
     
 }
 
-void NedWorldDynamic::boundarydetectCallback(const geometry_msgs::PointConstPtr& msg)
+void NedWorldDynamic::boundarydetectCallback(const geometry_msgs::PointStampedConstPtr& msg)
 {
-    dyn_boundary_output.x = msg->x;
-    dyn_boundary_output.y = msg->y;
-    dyn_boundary_output.z = msg->z;
+    dyn_boundary_output.x = msg->point.x;
+    dyn_boundary_output.y = msg->point.y;
+    dyn_boundary_output.z = msg->point.z;
     //ROS_INFO_STREAM("dyn_boundary_x: "<<dyn_boundary_output.x);
     
+    if(dyn_boundary_output.z < 0.5)
+    {
+		//ROS_INFO("0");
+    }
+    else if((dyn_boundary_output.z >0.5) && (dyn_boundary_output.z < 1.5) )
+    {
+	dyn_yaw = sta_yaw;
+	dyn_x = sta_x;
+	dyn_y = dyn_boundary_output.y+sin(dyn_yaw)*t_b2n(0)-cos(dyn_yaw)*t_b2n(1);
+	t_n2g(0)=dyn_x;
+	t_n2g(1)=dyn_y;
+	t_n2g(2)=0.0;
+	c_n2g(dyn_yaw,t_n2g);
+	sta_y = dyn_y;
+		//ROS_INFO("1");
+    }
+    else if((dyn_boundary_output.z > 1.5) && (dyn_boundary_output.z < 2.5))
+    {
+	dyn_yaw = sta_yaw;
+	dyn_y = sta_y;
+	dyn_x = dyn_boundary_output.x-sin(dyn_yaw)*t_b2n(1)-cos(dyn_yaw)*t_b2n(0);
+	t_n2g(0)=dyn_x;
+	t_n2g(1)=dyn_y;
+	t_n2g(2)=0.0;
+	c_n2g(dyn_yaw,t_n2g);
+	sta_x = dyn_x;
+	//ROS_INFO("2");   
+    }
+    else{
+	dyn_yaw = sta_yaw;
+	dyn_x = dyn_boundary_output.x-sin(dyn_yaw)*t_b2n(1)-cos(dyn_yaw)*t_b2n(0);
+	dyn_y = dyn_boundary_output.y+sin(dyn_yaw)*t_b2n(0)-cos(dyn_yaw)*t_b2n(1);
+	t_n2g(0)=dyn_x;
+	t_n2g(1)=dyn_y;
+	t_n2g(2)=0.0;
+	c_n2g(dyn_yaw,t_n2g);
+	sta_x = dyn_x;
+	sta_y = dyn_y;
+	//ROS_INFO("3");
+    }
+/**
     switch(int(dyn_boundary_output.z))
     {
 	case 0:
 	   
-	    //ROS_INFO("NOEDGE");
+	    ROS_ERROR("0");
 	    break;
 	case 1:
 	    dyn_yaw = sta_yaw;
@@ -88,7 +132,8 @@ void NedWorldDynamic::boundarydetectCallback(const geometry_msgs::PointConstPtr&
 		t_n2g(1)=dyn_y;
 		t_n2g(2)=0.0;
 		c_n2g(dyn_yaw,t_n2g);
-	    //ROS_INFO("YEDGE");
+		sta_y = dyn_y;
+	    ROS_INFO("1");
 	    break;
 	case 2:
 	    dyn_yaw = sta_yaw;
@@ -98,20 +143,23 @@ void NedWorldDynamic::boundarydetectCallback(const geometry_msgs::PointConstPtr&
 		t_n2g(1)=dyn_y;
 		t_n2g(2)=0.0;
 		c_n2g(dyn_yaw,t_n2g);
-	    //ROS_INFO("XEDGE");
+		sta_x =  dyn_x;
+	    ROS_INFO("2");
 	    break;
 	case 3:
 	    dyn_yaw = sta_yaw;
 	    dyn_x = dyn_boundary_output.x-sin(dyn_yaw)*t_b2n(1)-cos(dyn_yaw)*t_b2n(0);
 	    dyn_y = dyn_boundary_output.y+sin(dyn_yaw)*t_b2n(0)-cos(dyn_yaw)*t_b2n(1);
-		    t_n2g(0)=dyn_x;
+		t_n2g(0)=dyn_x;
 		t_n2g(1)=dyn_y;
 		t_n2g(2)=0.0;
 		c_n2g(dyn_yaw,t_n2g);
-	    //ROS_INFO("XYEDGE");
+		sta_x = dyn_x;
+		sta_y = dyn_y;
+	    ROS_INFO("3");
 	    break;
     }
-
+**/
 
 }
 
